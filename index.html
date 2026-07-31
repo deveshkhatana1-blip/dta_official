@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DTA Official App Download</title>
+  <meta name="description" content="DTA App — आधिकारिक डाउनलोड पेज" />
+  <style>
+    :root{
+      --bg:#f4f6f9;
+      --card:#fff;
+      --accent:#ff3366;
+      --muted:#666;
+      --btn-bg:#28a745;
+      --btn-bg-hover:#218838;
+    }
+    html,body{height:100%;}
+    body{
+      font-family:Arial, Helvetica, sans-serif;
+      background-color:var(--bg);
+      margin:0;
+      padding:24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#333;
+    }
+    .container{
+      background:var(--card);
+      padding:28px;
+      border-radius:12px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.08);
+      text-align:center;
+      max-width:420px;
+      width:100%;
+    }
+    h1{ color:var(--accent); margin:0 0 10px; font-size:1.5rem; }
+    p{ color:var(--muted); font-size:14px; margin:0 0 20px; line-height:1.4; }
+    .download-btn{
+      background-color:var(--btn-bg);
+      color:#fff;
+      padding:12px 20px;
+      font-size:16px;
+      font-weight:600;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-block;
+      transition:background-color .18s ease, transform .08s ease;
+      box-shadow:0 6px 14px rgba(40,167,69,0.18);
+    }
+    .download-btn:hover{ background-color:var(--btn-bg-hover); transform:translateY(-2px); }
+    .note{ font-size:12px; color:#9aa; margin-top:14px; }
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-labelledby="page-title">
+    <h1 id="page-title">DTA App (आधिकारिक)</h1>
+
+    <p>
+      अपनी सुरक्षित और असली ऐप को नीचे दिए गए बटन से सीधे डाउनलोड करें।
+      कृपया केवल आधिकारिक स्रोत (Play Store या हमारी आधिकारिक साइट) से ही डाउनलोड करें। 
+    </p>
+
+    <!-- TODO: Replace the href below with your official Play Store or signed APK URL. -->
+    <a
+      class="download-btn"
+      href="https://example.com/official-dta.apk"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="DTA ऐप डाउनलोड करें (नया विंडो में खुलेगा)"
+      download>
+      डाउनलोड करें (APK)
+    </a>
+
+    <p class="note" aria-hidden="false">
+      सुरक्षा सलाह: किसी भी 'mod' या अनधिकृत APK लिंक से बचें — वे मालवेयर या डेटा चोरी कर सकते हैं।
+    </p>
+  </main>
+</body>
+</html>
