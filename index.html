@@ -1,108 +1,74 @@
-#!/usr/bin/env python3
-"""
-Personal Command-Line AI Assistant for Termux & PC
-Author: Devesh
-Project: DTA
-"""
+Simple consent-based location-sharing server (for testing / learning)
+# WARNING: Use only with explicit user consent.
+# Run: pip install flask
 
-import os
-import sys
-import webbrowser
-import platform
-import subprocess
+from flask import Flask, request, jsonify, abort
+from datetime import datetime
+import threading
 
-def clear_screen():
-    os.system('cls' if platform.system() == 'Windows' else 'clear')
+app = Flask(__name__)
 
-def speak_or_print(text):
-    print(f"\n[AI Assistant]: {text}\n")
+# Simple in-memory store: {user_id: {lat, lng, ts}}
+locations = {}
+locations_lock = threading.Lock()
 
-def execute_command(user_input):
-    cmd = user_input.lower().strip()
-    
-    # 1. Instagram ओपन करने की कमांड
-    if "instagram" in cmd or "इंस्टाग्राम" in cmd:
-        speak_or_print("Instagram खोला जा रहा है...")
-        if platform.system() == "Linux" and os.path.exists("/data/data/com.termux"):
-            # Termux के लिए Android Intent का इस्तेमाल
-            try:
-                subprocess.run([
-                    "am", "start", 
-                    "-a", "android.intent.action.VIEW", 
-                    "-d", "https://www.instagram.com"
-                ])
-            except Exception:
-                webbrowser.open("https://www.instagram.com")
-        else:
-            # PC या अन्य डिवाइस के लिए Browser
-            webbrowser.open("https://www.instagram.com")
-        return True
+# For demo purposes: map of user_id -> token (in real app use DB + proper auth)
+# Create tokens and share them only with consenting users.
+USER_TOKENS = {
+    "alice": "token_alice_123",
+    "bob":   "token_bob_456"
+}
 
-    # 2. YouTube चलाने की कमांड
-    elif "youtube" in cmd or "यूट्यूब" in cmd:
-        speak_or_print("YouTube चलाया जा रहा है...")
-        if platform.system() == "Linux" and os.path.exists("/data/data/com.termux"):
-            try:
-                subprocess.run([
-                    "am", "start", 
-                    "-a", "android.intent.action.VIEW", 
-                    "-d", "https://www.youtube.com"
-                ])
-            except Exception:
-                webbrowser.open("https://www.youtube.com")
-        else:
-            webbrowser.open("https://www.youtube.com")
-        return True
+def check_auth(user_id, token):
+    return USER_TOKENS.get(user_id) == token
 
-    # 3. Google पर सर्च करने की कमांड (जैसे "Google पर X सर्च कर")
-    elif "google पर" in cmd or "search on google" in cmd or "सर्च कर" in cmd:
-        # कीवर्ड निकालने की कोशिश
-        for phrase in ["google पर", "search on google", "सर्च कर", "search"]:
-            if phrase in cmd:
-                query = cmd.split(phrase)[-1].strip()
-                break
-        else:
-            query = cmd
-            
-        speak_or_print(f"Google पर '{query}' खोजा जा रहा है...")
-        search_url = f"https://www.google.com/search?q={query}"
-        webbrowser.open(search_url)
-        return True
+@app.route("/update_location", methods=["POST"])
+def update_location():
+    """
+    Expects JSON:
+    {
+      "user_id": "alice",
+      "token": "token_alice_123",
+      "lat": 12.34,
+      "lng": 56.78,
+      "timestamp": "2026-10-19T12:00:00Z"   # optional
+    }
+    """
+    data = request.get_json(force=True, silent=True)
+    if not data:
+        return abort(400, "Invalid JSON")
 
-    # 4. सिस्टम ऐप्स या सामान्य कमांड (बाहर निकलना)
-    elif cmd in ["exit", "quit", "बाहर जाओ", "बंद करो"]:
-        speak_or_print("अलविदा! अपना ध्यान रखें।")
-        sys.exit(0)
+    user_id = data.get("user_id")
+    token = data.get("token")
+    lat = data.get("lat")
+    lng = data.get("lng")
+    ts = data.get("timestamp") or datetime.utcnow().isoformat() + "Z"
 
-    # 5. सामान्य AI रिस्पॉन्स (यहाँ आप Gemini API या अन्य AI इंटीग्रेट कर सकते हैं)
-    else:
-        return False
+    if not all([user_id, token, lat, lng]):
+        return abort(400, "Missing fields")
 
-def main():
-    clear_screen()
-    print("=" * 50)
-    print("      DTA Personal Command-Line AI Assistant     ")
-    print("=" * 50)
-    speak_or_print("नमस्ते! मैं आपका पर्सनल असिस्टेंट हूँ। बताइए मैं आपकी क्या मदद कर सकता हूँ?")
+    if not check_auth(user_id, token):
+        return abort(401, "Unauthorized")
 
-    while True:
-        try:
-            user_input = input("आप (You) > ")
-            if not user_input.strip():
-                continue
-            
-            # कमांड चेक करें और एक्सेक्यूट करें
-            handled = execute_command(user_input)
-            
-            if not handled:
-                # यदि कमांड सीधे मैच न हो, तो यहाँ AI लॉजिक काम करेगा
-                speak_or_print(f"माफ कीजिए, मुझे '{user_input}' के लिए कोई डायरेक्ट कमांड नहीं मिली। आप इसे किसी AI API (जैसे Gemini) से कनेक्ट कर सकते हैं।")
-                
-        except KeyboardInterrupt:
-            print("\n")
-            speak_or_print("प्रोग्राम बंद किया जा रहा है। अलविदा!")
-            break
+    with locations_lock:
+        locations[user_id] = {"lat": float(lat), "lng": float(lng), "timestamp": ts}
+
+    return jsonify({"status": "ok", "user_id": user_id, "timestamp": ts})
+
+
+@app.route("/location/<user_id>", methods=["GET"])
+def get_location(user_id):
+    # For demo: require token query param to view (so only authorized parties see)
+    token = request.args.get("token")
+    if not token or not check_auth(user_id, token):
+        return abort(401, "Unauthorized")
+
+    with locations_lock:
+        loc = locations.get(user_id)
+        if not loc:
+            return jsonify({"status": "no_data"}), 404
+        return jsonify({"status": "ok", "user_id": user_id, "location": loc})
 
 if __name__ == "__main__":
-    main()
-    
+    # Development server only. Use proper production server (gunicorn/uvicorn) for real deployment.
+    app.run(host="0.0.0.0", port=5000, debug=True)
