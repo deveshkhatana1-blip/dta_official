@@ -1,267 +1,108 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DTA Super AI - Pro</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-        }
-        body {
-            background-color: #0b0f19;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-        header {
-            background: #1e293b;
-            padding: 12px 15px;
-            border-bottom: 2px solid #22c55e;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header h1 {
-            font-size: 1.1rem;
-            color: #4ade80;
-        }
-        .header-btns {
-            display: flex;
-            gap: 8px;
-        }
-        .small-btn {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-        #chat-box {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .msg {
-            max-width: 88%;
-            padding: 12px 15px;
-            border-radius: 15px;
-            line-height: 1.5;
-            font-size: 0.95rem;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-        .user-msg {
-            background: #2563eb;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 2px;
-        }
-        .ai-msg {
-            background: #1e293b;
-            color: #e2e8f0;
-            align-self: flex-start;
-            border-bottom-left-radius: 2px;
-            border: 1px solid #22c55e;
-        }
-        .action-row {
-            margin-top: 8px;
-            display: flex;
-            gap: 8px;
-        }
-        .mini-btn {
-            background: #0f172a;
-            color: #38bdf8;
-            border: 1px solid #334155;
-            padding: 5px 10px;
-            border-radius: 10px;
-            font-size: 0.78rem;
-            cursor: pointer;
-        }
-        .input-area {
-            padding: 10px;
-            background: #1e293b;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            border-top: 1px solid #334155;
-        }
-        .input-area input {
-            flex: 1;
-            padding: 12px 15px;
-            border-radius: 25px;
-            border: 1px solid #475569;
-            background: #0f172a;
-            color: white;
-            outline: none;
-            font-size: 1rem;
-        }
-        .btn {
-            background: #22c55e;
-            color: #000;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-        .btn-mic {
-            background: #ef4444;
-            color: white;
-        }
-    </style>
-</head>
-<body>
+#!/usr/bin/env python3
+"""
+Personal Command-Line AI Assistant for Termux & PC
+Author: Devesh
+Project: DTA
+"""
 
-<header>
-    <h1>🟢 DTA Super AI (Stable)</h1>
-    <div class="header-btns">
-        <button class="small-btn" onclick="clearChat()">साफ़ करें</button>
-    </div>
-</header>
+import os
+import sys
+import webbrowser
+import platform
+import subprocess
 
-<div id="chat-box">
-    <div class="msg ai-msg">नमस्ते देवेश भाई! अब एरर और भूलने वाली सारी समस्या ठीक हो गई है। बताइए, अब क्या बात करनी है?</div>
-</div>
+def clear_screen():
+    os.system('cls' if platform.system() == 'Windows' else 'clear')
 
-<div class="input-area">
-    <button class="btn btn-mic" onclick="startMic()">🎤</button>
-    <input type="text" id="userInput" placeholder="यहाँ लिखें..." onkeypress="if(event.key==='Enter') sendMessage()">
-    <button class="btn" onclick="sendMessage()">➤</button>
-</div>
+def speak_or_print(text):
+    print(f"\n[AI Assistant]: {text}\n")
 
-<script>
-    const chatBox = document.getElementById("chat-box");
-    let conversationLog = "सिस्टम निर्देश: तुम्हारा नाम DTA Super AI है। तुम्हें देवेश (DTA कंपनी के मालिक) ने बनाया है। तुम हिंदी में बहुत स्मार्ट और सटीक जवाब देते हो।";
+def execute_command(user_input):
+    cmd = user_input.lower().strip()
+    
+    # 1. Instagram ओपन करने की कमांड
+    if "instagram" in cmd or "इंस्टाग्राम" in cmd:
+        speak_or_print("Instagram खोला जा रहा है...")
+        if platform.system() == "Linux" and os.path.exists("/data/data/com.termux"):
+            # Termux के लिए Android Intent का इस्तेमाल
+            try:
+                subprocess.run([
+                    "am", "start", 
+                    "-a", "android.intent.action.VIEW", 
+                    "-d", "https://www.instagram.com"
+                ])
+            except Exception:
+                webbrowser.open("https://www.instagram.com")
+        else:
+            # PC या अन्य डिवाइस के लिए Browser
+            webbrowser.open("https://www.instagram.com")
+        return True
 
-    function addMsg(text, type, isAI) {
-        const div = document.createElement("div");
-        div.className = "msg " + type;
-        div.innerText = text;
+    # 2. YouTube चलाने की कमांड
+    elif "youtube" in cmd or "यूट्यूब" in cmd:
+        speak_or_print("YouTube चलाया जा रहा है...")
+        if platform.system() == "Linux" and os.path.exists("/data/data/com.termux"):
+            try:
+                subprocess.run([
+                    "am", "start", 
+                    "-a", "android.intent.action.VIEW", 
+                    "-d", "https://www.youtube.com"
+                ])
+            except Exception:
+                webbrowser.open("https://www.youtube.com")
+        else:
+            webbrowser.open("https://www.youtube.com")
+        return True
 
-        if (isAI) {
-            const row = document.createElement("div");
-            row.className = "action-row";
-
-            const speakBtn = document.createElement("button");
-            speakBtn.className = "mini-btn";
-            speakBtn.innerText = "🔊 सुनें";
-            speakBtn.onclick = function() { speakNow(text); };
-
-            const copyBtn = document.createElement("button");
-            copyBtn.className = "mini-btn";
-            copyBtn.innerText = "📋 Copy";
-            copyBtn.onclick = function() {
-                navigator.clipboard.writeText(text);
-                copyBtn.innerText = "✅ Copied!";
-                setTimeout(function() { copyBtn.innerText = "📋 Copy"; }, 1500);
-            };
-
-            row.appendChild(speakBtn);
-            row.appendChild(copyBtn);
-            div.appendChild(row);
-        }
-
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-        return div;
-    }
-
-    async function askAI(question, retries = 2) {
-        conversationLog += "\nदेवेश: " + question;
-        const promptToSent = conversationLog.slice(-1500); // सुरक्षित साइज़ ताकि एरर न आए
-
-        try {
-            const url = "https://text.pollinations.ai/" + encodeURIComponent(promptToSent) + "?model=openai";
-            const res = await fetch(url);
+    # 3. Google पर सर्च करने की कमांड (जैसे "Google पर X सर्च कर")
+    elif "google पर" in cmd or "search on google" in cmd or "सर्च कर" in cmd:
+        # कीवर्ड निकालने की कोशिश
+        for phrase in ["google पर", "search on google", "सर्च कर", "search"]:
+            if phrase in cmd:
+                query = cmd.split(phrase)[-1].strip()
+                break
+        else:
+            query = cmd
             
-            if (!res.ok) throw new Error("Server error");
+        speak_or_print(f"Google पर '{query}' खोजा जा रहा है...")
+        search_url = f"https://www.google.com/search?q={query}"
+        webbrowser.open(search_url)
+        return True
+
+    # 4. सिस्टम ऐप्स या सामान्य कमांड (बाहर निकलना)
+    elif cmd in ["exit", "quit", "बाहर जाओ", "बंद करो"]:
+        speak_or_print("अलविदा! अपना ध्यान रखें।")
+        sys.exit(0)
+
+    # 5. सामान्य AI रिस्पॉन्स (यहाँ आप Gemini API या अन्य AI इंटीग्रेट कर सकते हैं)
+    else:
+        return False
+
+def main():
+    clear_screen()
+    print("=" * 50)
+    print("      DTA Personal Command-Line AI Assistant     ")
+    print("=" * 50)
+    speak_or_print("नमस्ते! मैं आपका पर्सनल असिस्टेंट हूँ। बताइए मैं आपकी क्या मदद कर सकता हूँ?")
+
+    while True:
+        try:
+            user_input = input("आप (You) > ")
+            if not user_input.strip():
+                continue
             
-            let reply = await res.text();
+            # कमांड चेक करें और एक्सेक्यूट करें
+            handled = execute_command(user_input)
+            
+            if not handled:
+                # यदि कमांड सीधे मैच न हो, तो यहाँ AI लॉजिक काम करेगा
+                speak_or_print(f"माफ कीजिए, मुझे '{user_input}' के लिए कोई डायरेक्ट कमांड नहीं मिली। आप इसे किसी AI API (जैसे Gemini) से कनेक्ट कर सकते हैं।")
+                
+        except KeyboardInterrupt:
+            print("\n")
+            speak_or_print("प्रोग्राम बंद किया जा रहा है। अलविदा!")
+            break
 
-            if (!reply || reply.includes("404") || reply.includes("Please wait")) {
-                throw new Error("Invalid response");
-            }
-
-            conversationLog += "\nDTA AI: " + reply;
-            return reply;
-        } catch (e) {
-            if (retries > 0) {
-                await new Promise(r => setTimeout(r, 1500));
-                return askAI(question, retries - 1);
-            }
-            return "हाँ भाई, नेटवर्क में थोड़ी रुकावट थी, अब बताइए क्या कह रहे थे?";
-        }
-    }
-
-    async function sendMessage() {
-        const input = document.getElementById("userInput");
-        const text = input.value.trim();
-        if (!text) return;
-
-        window.speechSynthesis.cancel();
-        addMsg(text, "user-msg", false);
-        input.value = "";
-        const waitMsg = addMsg("सोच रहा हूँ...", "ai-msg", false);
-
-        const ans = await askAI(text);
-        chatBox.removeChild(waitMsg);
-        addMsg(ans, "ai-msg", true);
-        speakNow(ans);
-    }
-
-    function speakNow(text) {
-        try {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text.replace(/[*#_]/g, ""));
-            msg.lang = "hi-IN";
-
-            const voices = window.speechSynthesis.getVoices();
-            for (let i = 0; i < voices.length; i++) {
-                if (voices[i].lang.includes("hi")) {
-                    msg.voice = voices[i];
-                    break;
-                }
-            }
-            window.speechSynthesis.speak(msg);
-        } catch (e) {}
-    }
-
-    function startMic() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) {
-            alert("माइक के लिए Chrome ब्राउज़र का उपयोग करें।");
-            return;
-        }
-        window.speechSynthesis.cancel();
-        const rec = new SR();
-        rec.lang = "hi-IN";
-        rec.onresult = function(e) {
-            document.getElementById("userInput").value = e.results[0][0].transcript;
-            sendMessage();
-        };
-        rec.start();
-    }
-
-    function clearChat() {
-        window.speechSynthesis.cancel();
-        conversationLog = "सिस्टम निर्देश: तुम्हारा नाम DTA Super AI है। तुम्हें देवेश (DTA कंपनी के मालिक) ने बनाया है।";
-        chatBox.innerHTML = '<div class="msg ai-msg">चैट और मेमोरी ताज़ा हो गई! बताइए देवेश भाई।</div>';
-    }
-</script>
-
-</body>
-    </html>
+if __name__ == "__main__":
+    main()
     
